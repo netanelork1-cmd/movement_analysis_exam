@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>מבחן — הבסיס לניתוחי תנועה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#B8860B;--gold-light:#F5E6C0;--gold-pale:#FBF5E8;
+  --ink:#1A1612;--ink-soft:#3D3530;--muted:#7A6E65;
+  --divider:#E8DDD0;--surface:#FEFCF8;--accent:#F7F0E6;
+  --correct:#2D6A2D;--correct-bg:#EDF7ED;
+  --wrong:#8B1A1A;
+}
+body{font-family:'Heebo',sans-serif;background:#F0EBE0;direction:rtl;padding:2rem 1rem;color:var(--ink)}
+.doc{max-width:860px;margin:0 auto;background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 4px 40px rgba(0,0,0,.12)}
+
+/* HEADER */
+.doc-header{background:var(--ink);padding:3rem;border-bottom:4px solid var(--gold)}
+.doc-header h1{font-family:'Frank Ruhl Libre',serif;font-size:32px;font-weight:700;color:#F5E6C0;line-height:1.3;margin-bottom:.75rem}
+.doc-header .intro{font-size:14px;color:#9E9088;line-height:1.8}
+.parts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.5rem}
+.part-badge{background:rgba(255,255,255,.07);border:1px solid rgba(184,134,11,.3);border-radius:10px;padding:1rem 1.25rem}
+.part-badge .pb-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:.4rem}
+.part-badge .pb-title{font-size:14px;color:#D8CFC5;font-weight:500}
+.part-badge .pb-sub{font-size:12px;color:#7A6E65;margin-top:.2rem}
+
+/* CONTENT */
+.content{padding:3rem}
+.part-header{margin-bottom:2.5rem;padding-bottom:1.25rem;border-bottom:2px solid var(--gold-light)}
+.part-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:.4rem}
+.part-title{font-family:'Frank Ruhl Libre',serif;font-size:22px;font-weight:700;color:var(--ink)}
+.part-desc{font-size:14px;color:var(--muted);margin-top:.5rem;line-height:1.7}
+
+/* SECTION DIVIDER */
+.section-divider{border:none;border-top:1px solid var(--divider);margin:3rem 0}
+
+/* CONCEPT TAG */
+.concept-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:var(--ink);color:var(--gold);padding:3px 10px;border-radius:4px;margin-bottom:.75rem}
+
+/* QUESTION CARD */
+.q-card{background:var(--surface);border:1px solid var(--divider);border-radius:12px;overflow:hidden;margin-bottom:1.75rem}
+.q-header{background:var(--accent);padding:.85rem 1.25rem;display:flex;align-items:center;gap:.75rem;border-bottom:1px solid var(--divider)}
+.q-num{min-width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--gold-light);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.q-text{font-size:15px;font-weight:500;color:var(--ink);line-height:1.6}
+.q-body{padding:1.25rem}
+
+/* OPTIONS */
+.options{display:flex;flex-direction:column;gap:.6rem}
+.option{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1rem;border-radius:8px;border:1.5px solid var(--divider);cursor:pointer;transition:all .15s;background:#fff;font-size:14px;color:var(--ink-soft);line-height:1.55;text-align:right}
+.option:hover{border-color:var(--gold);background:var(--gold-pale)}
+.option input[type="radio"]{display:none}
+.option.selected{border-color:var(--gold);background:var(--gold-pale)}
+.option.correct{border-color:var(--correct);background:var(--correct-bg);color:var(--correct)}
+.option.wrong{border-color:var(--wrong);background:#FDF0F0;color:var(--wrong)}
+.opt-letter{min-width:22px;height:22px;border-radius:50%;border:1.5px solid var(--divider);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;transition:all .15s}
+.option.selected .opt-letter{border-color:var(--gold);background:var(--gold);color:#fff}
+.option.correct .opt-letter{border-color:var(--correct);background:var(--correct);color:#fff}
+.option.wrong .opt-letter{border-color:var(--wrong);background:var(--wrong);color:#fff}
+
+/* SCORE BAR */
+.score-bar{display:none;background:var(--ink);border-radius:8px;padding:1rem 1.25rem;margin-top:1rem;align-items:center;justify-content:space-between;gap:1rem}
+.score-bar.visible{display:flex}
+.score-text{font-size:14px;color:#D8CFC5}
+.score-num{font-family:'Frank Ruhl Libre',serif;font-size:24px;font-weight:700;color:var(--gold)}
+
+/* PART 2 */
+.video-question{margin-bottom:2.5rem}
+.video-wrap{position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;margin:1rem 0;background:#000}
+.video-wrap iframe{position:absolute;top:0;right:0;width:100%;height:100%;border:none}
+.video-placeholder{position:absolute;top:0;right:0;width:100%;height:100%;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem}
+.video-placeholder .vp-icon{font-size:2.5rem;opacity:.4}
+.video-placeholder .vp-text{font-size:13px;color:#7A6E65;letter-spacing:1px}
+.q2-header{display:flex;align-items:flex-start;gap:.75rem;margin-bottom:1rem}
+.q2-text{font-size:15px;font-weight:500;color:var(--ink);line-height:1.7}
+textarea{width:100%;border:1.5px solid var(--divider);border-radius:8px;padding:1rem;font-family:'Heebo',sans-serif;font-size:14px;color:var(--ink);background:#fff;resize:vertical;min-height:120px;direction:rtl;transition:border-color .15s;line-height:1.7}
+textarea:focus{outline:none;border-color:var(--gold)}
+textarea::placeholder{color:#B0A898}
+
+/* SUBMIT */
+.submit-section{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--divider);text-align:center}
+.submit-note{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.7}
+.name-field{margin-bottom:1.5rem;text-align:right}
+.name-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.5rem}
+.name-field input{width:100%;max-width:320px;border:1.5px solid var(--divider);border-radius:8px;padding:.75rem 1rem;font-family:'Heebo',sans-serif;font-size:14px;color:var(--ink);background:#fff;direction:rtl;transition:border-color .15s}
+.name-field input:focus{outline:none;border-color:var(--gold)}
+.btn-submit{background:var(--ink);color:var(--gold-light);border:none;border-radius:10px;padding:1rem 3rem;font-family:'Heebo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+.btn-submit:hover{background:#2D2520;transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.2)}
+
+/* PART1 CHECK BTN */
+.btn-check{background:var(--gold);color:#fff;border:none;border-radius:8px;padding:.65rem 1.5rem;font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:1rem;transition:all .15s}
+.btn-check:hover{background:#9A6E08}
+
+/* FOOTER */
+
+/* VIDEO LINK */
+.video-link{display:block;text-decoration:none;margin:1rem 0;border-radius:10px;overflow:hidden;border:2px solid var(--divider);transition:all .2s}
+.video-link:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.video-link-inner{background:var(--ink);padding:1.75rem;display:flex;align-items:center;gap:1.25rem}
+.play-icon{width:48px;height:48px;border-radius:50%;background:var(--gold);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.play-text{font-size:15px;font-weight:600;color:#F5E6C0;font-family:'Heebo',sans-serif}
+
+.doc-footer{text-align:center;padding:2rem 0 2.5rem;border-top:1px solid var(--divider);margin-top:3rem;font-size:13px;color:var(--muted);letter-spacing:.5px}
+
+/* SUCCESS */
+.success-msg{display:none;background:var(--correct-bg);border:1px solid var(--correct);border-radius:10px;padding:1.5rem;text-align:center;margin-top:1.5rem}
+.success-msg.visible{display:block}
+.success-msg p{color:var(--correct);font-size:15px;font-weight:500}
+</style>
+</head>
+<body>
+<div class="doc">
+
+<!-- HEADER -->
+<div class="doc-header">
+  <h1>הבסיס לניתוחי תנועה — מבחן</h1>
+  <p class="intro">המבחן מחולק לשני חלקים. קראו כל שאלה בעיון לפני שעונים.</p>
+  <div class="parts-grid">
+    <div class="part-badge">
+      <div class="pb-label">חלק א׳</div>
+      <div class="pb-title">שאלות סגורות</div>
+      <div class="pb-sub">חומר סגור · 10 שאלות · 30 נקודות</div>
+    </div>
+    <div class="part-badge">
+      <div class="pb-label">חלק ב׳</div>
+      <div class="pb-title">ניתוח סרטוני טכניקה</div>
+      <div class="pb-sub">חומר פתוח · 8 שאלות · 70 נקודות + 20 בונוס</div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- PART 1 -->
+<div class="part-header">
+  <div class="part-label">חלק א׳ — חומר סגור</div>
+  <div class="part-title">שאלות על מונחים</div>
+  <div class="part-desc">בחרו את התשובה הנכונה. בסיום לחצו "בדוק תשובות" לראות את הניקוד.</div>
+</div>
+
+<!-- Q1 -->
+<div class="q-card" id="qcard-1">
+  <div class="q-header">
+    <div class="q-num">1</div>
+    <div class="q-text">במשקולות חופשיות, לאיזה כיוון תמיד פועל קו הכוח?</div>
+  </div>
+  <div class="q-body">
+    <div class="concept-tag">קו הכוח והווקטור</div>
+    <div class="options" id="opts-1">
+      <label class="option" onclick="selectOption(1,'a')"><span class="opt-letter">א</span>לכיוון הגלגלת</label>
+      <label class="option" onclick="selectOption(1,'b')"><span class="opt-letter">ב</span>בניצב לציר הסיבוב של המפרק</label>
+      <label class="option" onclick="selectOption(1,'c')"><span class="opt-letter">ג</span>ישר למטה בגלל כוח המשיכה</label>
+      <label class="option" onclick="selectOption(1,'d')"><span class="opt-letter">ד</span>בכיוון ההתכווצות של השריר</label>
+    </div>
+  </div>
+</div>
+
+<!-- Q2 -->
+<div class="q-card" id="qcard-2">
+  <div class="q-header">
+    <div class="q-num">2</div>
+    <div class="q-text">מתאמן עושה הרחקות כתפיים עם פולי תחתון. לאיזה כיוון פועל קו הכוח?</div>
+  </div>
+  <div class="q-body">
+    <div class="concept-tag">קו הכוח והווקטור</div>
+    <div class="options" id="opts-2">
+      <label class="option" onclick="selectOption(2,'a')"><span class="opt-letter">א</span>ישר למטה</label>
+      <label class="option" onclick="selectOption(2,'b')"><span class="opt-letter">ב</span>לכיוון הגלגלת</label>
+      <label class="option" onclick="selectOption(2,'c')"><span class="opt-letter">ג</span>לכיוון הכתף</label>
+      <label class="option" onclick="selectOption(2,'d')"><span class="opt-letter">ד</span>בניצב לזרוע</label>
+    </div>
+  </div>
+</div>
+
+<!-- Q3 -->
+<div class="q-card" id="qcard-3">
+  <div class="q-header">
+    <div class="q-num">3</div>
+    <div class="q-text">בהרחקות כתפיים עם משקולות — מתי הכי קשה לשריר?</div>
+  </div>
+  <div class="q-body">
+    <div class="concept-tag">זרוע מומנט</div>
+    <div class="options" id="opts-3">
+      <label class="option" onclick="selectOption(3,'a')"><span class="opt-letter">א</span>בתחילת התנועה כשהיד למטה</label>
+      <label class="option" onclick="selectOption(3,'b')"><span class="opt-letter">ב</span>כשהיד ב-45 מעלות</label>
+      <label class="option" onclick="selectOption(3,'c')"><span class="opt-letter">ג</span>כשהיד מקבילה לרצפה ב-90 מעלות</label>
+      <label class="option" onclick="selectOption(3,'d')"><span class="opt-letter">ד</span>קשה באותה מידה לאורך כל התנועה</label>
+    </div>
+  </div>
+</div>
+
+<!-- Q4 -->
+<div class="q-card" id="qcard-4">
+  <div class="q-header">
+    <div class="q-num">4</div>
+    <div class="q-text">מה ההגדרה הנכונה של זרוע מומנט?</div>
+  </div>
+  <div class="q-body">
+    <div class="concept-tag">זרוע מומנט</div>
+    <div class="options" id="opts-4">
+      <label class="option" onclick="selectOption(4,'a')"><span class="opt-letter">א</span>הכוח שהשריר מפיק</label>
+      <label class="option" onclick="selectOption(4,'b')"><span class="opt-letter">ב</span>המרחק בין המפרק לבין קו הכוח</label>
+      <label class="option" onclick="selectOption(4,'c')"><span class="opt-letter">ג</span>זווית הכיווץ המקסימלית של השריר</label>
+      <label class="option" onclick="selectOption(4,'d')"><span class="opt-letter">ד</span>המרחק בין שני מפרקים</label>
+    </div>
+  </div>
+</div>
+
+<!-- Q5 -->
+<div class="q-card" id="qcard-5">
+  <div class="q-header">
+    <div class="q-num">5</div>
+    <div class="q-text">באיזה מצב השריר מפיק כוח מקסימלי?</div>
+  </div>
+  <div class="q-body">
+    <div class="concept-tag">חוק אורך-מתח</div>
+    <div class="options" id="opts-5">
+      <label class="option" onclick="selectOption(5,'a')"><span class="opt-letter">א</span>כשהוא במתיחה קיצונית</label>
+      <label class="option" onclick="selectOption(5,'b')"><span class="opt-letter">ב</span>כשהוא בכיווץ קיצוני</label>
+      <label class="option" onclick="selectOption(5,'c')"><span class="opt-letter">ג</span>כשיש חפיפה מושלמת בין אקטין למיוזין</label>
+      <label class="option" onclick="selectOption(5,'d')"><span class="opt-letter">ד</span>כשהוא קצר ככל האפשר</label>
+    </div>
+  </div>
+</div>
+
+<!-- Q6 -->
+<div class="q-card" id="qcard-6">
+  <div class="q-header">
+    <div class="q-num">6</div>
+    <div class="q-text">מה קורה לשריר במתיחה קיצונית?</div>
+  </div>
+  <div class="q-body">
+    <div class="concept-tag">חוק אורך-מתח</div>
+    <div class="options" id="opts-6">
+      <label class="option" onclick="selectOption(6,'a')"><span class="opt-letter">א</span>הוא מפיק כוח מקסימלי כי הוא "דרוך"</label>
+      <label class="option" onclick="selectOption(6,'b')"><span class="opt-letter">ב</span>ה"ידיים" (מיוזין) רחוקות מדי מה"חבלים" (אקטין) ולכן השריר חלש</label>
+      <label class="option" onclick="selectOption(6,'c')"><span class="opt-letter">ג</span>האקטין והמיוזין חופפים בצורה מושלמת</label>
+      <label class="option" onclick="selectOption(6,'d')"><span class="opt-letter">ד</span>השריר נכנס לאי ספיקה פסיבית בלבד</label>
+    </div>
+  </div>
+</div>
+
+<!-- Q7 -->
+<div class="q-card" id="qcard-7">
+  <div class="q-header">
+    <div class="q-num">7</div>
+    <div class="q-text">מהי אי ספיקה אקטיבית?</div>
+  </div>
+  <div class="q-body">
+    <div class="concept-tag">אי ספיקה אקטיבית ופסיבית</div>
+    <div class="options" id="opts-7">
+      <label class="option" onclick="selectOption(7,'a')"><span class="opt-letter">א</span>כשהאנטגוניסט עוצר את התנועה</label>
+      <label class="option" onclick="selectOption(7,'b')"><span class="opt-letter">ב</span>כשהשריר מתוח בשני קצותיו ועוצר פיזית את התנועה</label>
+      <label class="option" onclick="selectOption(7,'c')"><span class="opt-letter">ג</span>כשהשריר מקוצר בשני קצותיו ולא יכול להתכווץ יותר</label>
+      <label class="option" onclick="selectOption(7,'d')"><span class="opt-letter">ד</span>כשהשריר לא מקבל אות עצבי</label>
+    </div>
+  </div>
+</div>
+
+<!-- Q8 -->
+<div class="q-card" id="qcard-8">
+  <div class="q-header">
+    <div class="q-num">8</div>
+    <div class="q-text">בתרגיל כפיפת ברך בשכיבה במכונה — כשהירך ישרה לגמרי, ההמסטרינג נמצא במצב של:</div>
+  </div>
+  <div class="q-body">
+    <div class="concept-tag">אי ספיקה אקטיבית ופסיבית</div>
+    <div class="options" id="opts-8">
+      <label class="option" onclick="selectOption(8,'a')"><span class="opt-letter">א</span>אי ספיקה אקטיבית</label>
+      <label class="option" onclick="selectOption(8,'b')"><span class="opt-letter">ב</span>אי ספיקה פסיבית</label>
+      <label class="option" onclick="selectOption(8,'c')"><span class="opt-letter">ג</span>חפיפה מושלמת בין אקטין למיוזין</label>
+      <label class="option" onclick="selectOption(8,'d')"><span class="opt-letter">ד</span>כיווץ מקסימלי</label>
+    </div>
+  </div>
+</div>
+
+<!-- Q9 -->
+<div class="q-card" id="qcard-9">
+  <div class="q-header">
+    <div class="q-num">9</div>
+    <div class="q-text">לפי עיקרון הגיוס של הנמן, מתי הגוף מגייס יחידות מוטוריות גדולות?</div>
+  </div>
+  <div class="q-body">
+    <div class="concept-tag">עיקרון הנמן</div>
+    <div class="options" id="opts-9">
+      <label class="option" onclick="selectOption(9,'a')"><span class="opt-letter">א</span>בתחילת כל סט</label>
+      <label class="option" onclick="selectOption(9,'b')"><span class="opt-letter">ב</span>כשמתקרבים לכשל בסוף הסט ויש עומס מכני גבוה</label>
+      <label class="option" onclick="selectOption(9,'c')"><span class="opt-letter">ג</span>רק בתרגילים כבדים מאוד</label>
+      <label class="option" onclick="selectOption(9,'d')"><span class="opt-letter">ד</span>כשהשריר נמצא במתיחה מקסימלית</label>
+    </div>
+  </div>
+</div>
+
+<!-- Q10 -->
+<div class="q-card" id="qcard-10">
+  <div class="q-header">
+    <div class="q-num">10</div>
+    <div class="q-text">מה הפוטנציאל לצמיחה (היפרטרופיה) של יחידות מוטוריות קטנות?</div>
+  </div>
+  <div class="q-body">
+    <div class="concept-tag">עיקרון הנמן</div>
+    <div class="options" id="opts-10">
+      <label class="option" onclick="selectOption(10,'a')"><span class="opt-letter">א</span>הכי גבוה כי הן מגויסות ראשונות</label>
+      <label class="option" onclick="selectOption(10,'b')"><span class="opt-letter">ב</span>בינוני</label>
+      <label class="option" onclick="selectOption(10,'c')"><span class="opt-letter">ג</span>שואף לאפס</label>
+      <label class="option" onclick="selectOption(10,'d')"><span class="opt-letter">ד</span>זהה ליחידות הגדולות</label>
+    </div>
+  </div>
+</div>
+
+<button class="btn-check" onclick="checkAnswers()">בדוק תשובות חלק א׳</button>
+<div class="score-bar" id="score-bar">
+  <div class="score-text">ניקוד חלק א׳</div>
+  <div class="score-num" id="score-num">—</div>
+</div>
+
+<hr class="section-divider">
+
+<!-- PART 2 -->
+<div class="part-header">
+  <div class="part-label">חלק ב׳ — חומר פתוח</div>
+  <div class="part-title">ניתוח סרטוני טכניקה</div>
+  <div class="part-desc">צפו בסרטון וענו על השאלה. אין תשובה נכונה אחת — הניקוד על עומק ההסבר הביומכני ויכולת ההנגשה.</div>
+</div>
+
+<!-- Q11 -->
+<div class="video-question">
+  <div class="q2-header">
+    <div class="q-num">11</div>
+    <div class="q2-text">למה בפשיטת ברכיים נמליץ להשען <strong>אחורה</strong> ובכפיפת ברכיים נמליץ להשען <strong>קדימה</strong>?<br>הסבירו לפי לפחות שני מונחים ביומכניים.</div>
+  </div>
+  <textarea placeholder="כתבו את תשובתכם כאן..." id="ans-11"></textarea>
+</div>
+
+<!-- Q12 -->
+<div class="video-question">
+  <div class="q2-header">
+    <div class="q-num">12</div>
+    <div class="q2-text">צפו בסרטון ונתחו את התנועה.</div>
+  </div>
+  <div class="video-wrap">
+    <iframe src="https://www.youtube-nocookie.com/embed/0TBLoFZGDxY?rel=0&playsinline=1" allowfullscreen></iframe>
+  </div>
+  <textarea placeholder="כתבו את תשובתכם כאן..." id="ans-12"></textarea>
+</div>
+
+<!-- Q13 -->
+<div class="video-question">
+  <div class="q2-header">
+    <div class="q-num">13</div>
+    <div class="q2-text">צפו בסרטון ונתחו את התנועה.</div>
+  </div>
+  <div class="video-wrap">
+    <iframe src="https://www.youtube-nocookie.com/embed/ZZUUuG79caY?rel=0&playsinline=1" allowfullscreen></iframe>
+  </div>
+  <textarea placeholder="כתבו את תשובתכם כאן..." id="ans-13"></textarea>
+</div>
+
+<!-- Q14 -->
+<div class="video-question">
+  <div class="q2-header">
+    <div class="q-num">14</div>
+    <div class="q2-text">צפו בסרטון ונתחו את התנועה.</div>
+  </div>
+  <div class="video-wrap">
+    <iframe src="https://www.youtube-nocookie.com/embed/IGS9WYpqXj0?rel=0&playsinline=1" allowfullscreen></iframe>
+  </div>
+  <textarea placeholder="כתבו את תשובתכם כאן..." id="ans-14"></textarea>
+</div>
+
+<!-- Q15 -->
+
+
+<!-- Q16 -->
+<div class="video-question">
+  <div class="q2-header">
+    <div class="q-num">16</div>
+    <div class="q2-text">צפו בסרטון ונתחו את התנועה.</div>
+  </div>
+  <div class="video-wrap">
+    <iframe src="https://www.youtube-nocookie.com/embed/m3UF_oPCadg?rel=0&playsinline=1" allowfullscreen></iframe>
+  </div>
+  <textarea placeholder="כתבו את תשובתכם כאן..." id="ans-16"></textarea>
+</div>
+
+<!-- Q17 -->
+<div class="video-question">
+  <div class="q2-header">
+    <div class="q-num">17</div>
+    <div class="q2-text">צפו בסרטון ונתחו את התנועה.</div>
+  </div>
+  <div class="video-wrap">
+    <iframe src="https://www.youtube-nocookie.com/embed/d6DF8n02gsY?rel=0&playsinline=1" allowfullscreen></iframe>
+  </div>
+  <textarea placeholder="כתבו את תשובתכם כאן..." id="ans-17"></textarea>
+</div>
+
+<!-- Q18 -->
+<div class="video-question">
+  <div class="q2-header">
+    <div class="q-num">18</div>
+    <div class="q2-text">נתחו את שתי הטכניקות המופיעות בסרטון והסבירו מה קורה כשמרחיקים או מקרבים את המשקולת לגוף.</div>
+  </div>
+  <div class="video-wrap">
+    <iframe src="https://www.youtube-nocookie.com/embed/P8Jwnz3Ljnw?rel=0&playsinline=1" allowfullscreen></iframe>
+  </div>
+  <textarea placeholder="כתבו את תשובתכם כאן..." id="ans-18"></textarea>
+</div>
+
+<!-- SUBMIT -->
+
+<!-- BONUS -->
+<hr class="section-divider">
+<div class="part-header">
+  <div class="part-label">שאלת בונוס — 20 נקודות</div>
+  <div class="part-title">ניתוח משולב</div>
+  <div class="part-desc">שאלה מורכבת. הניקוד על עומק ההסבר, שימוש במונחים ויכולת לחבר בין עקרונות שונים.</div>
+</div>
+<div class="video-question">
+  <div class="q2-header">
+    <div class="q-num">★</div>
+    <div class="q2-text">צפו בסרטון.<br><br>לפניכם תרגיל <strong>V Squat</strong>.<br><br>נתחו את התרגיל — הסבירו איזה שריר יהיה דומיננטי בכל חלק בתנועה ולמה.</div>
+  </div>
+  <div class="video-wrap">
+    <iframe src="https://www.youtube-nocookie.com/embed/0aFROf8KP1E?rel=0&playsinline=1" allowfullscreen></iframe>
+  </div>
+  <textarea placeholder="כתבו את תשובתכם כאן..." id="ans-bonus" style="min-height:200px"></textarea>
+</div>
+<div class="submit-section">
+  <div class="name-field">
+    <label>שם מלא <span style="color:#A32D2D">*</span></label>
+    <input type="text" id="student-name" placeholder="ישראל ישראלי">
+  </div>
+  <div class="name-field">
+    <label>כתובת מייל <span style="color:#A32D2D">*</span></label>
+    <input type="email" id="student-email" placeholder="example@gmail.com" dir="ltr">
+  </div>
+
+  <p class="submit-note">שדות המסומנים ב-<span style="color:#A32D2D">*</span> הם חובה. הציון יישלח למייל לאחר הבדיקה.</p>
+  <button class="btn-submit" onclick="submitExam()">הגשת המבחן</button>
+  <div class="success-msg" id="success-msg">
+    <p>✓ המבחן הוגש בהצלחה! נתנאל יבדוק ויחזור אליכם עם הציון.</p>
+  </div>
+</div>
+
+</div>
+
+<div class="doc-footer">נתנאל ליאני | אופק זרמטי</div>
+</div>
+
+<script>
+const answers = {1:'c',2:'b',3:'c',4:'b',5:'c',6:'b',7:'c',8:'b',9:'b',10:'c'};
+const selected = {};
+
+function selectOption(q, letter) {
+  selected[q] = letter;
+  const opts = document.querySelectorAll(`#opts-${q} .option`);
+  opts.forEach((opt, i) => {
+    const letters = ['a','b','c','d'];
+    opt.classList.toggle('selected', letters[i] === letter);
+  });
+}
+
+function checkAnswers() {
+  let score = 0;
+  for (let q = 1; q <= 10; q++) {
+    const opts = document.querySelectorAll(`#opts-${q} .option`);
+    const letters = ['a','b','c','d'];
+    opts.forEach((opt, i) => {
+      const l = letters[i];
+      opt.classList.remove('selected','correct','wrong');
+      if (l === answers[q]) {
+        opt.classList.add('correct');
+      } else if (selected[q] === l && l !== answers[q]) {
+        opt.classList.add('wrong');
+      }
+    });
+    if (selected[q] === answers[q]) score++;
+  }
+  const bar = document.getElementById('score-bar');
+  const num = document.getElementById('score-num');
+  bar.classList.add('visible');
+  num.textContent = `${score * 3} / 30`;
+}
+
+function submitExam() {
+  const name = document.getElementById('student-name').value.trim();
+  const email = document.getElementById('student-email').value.trim();
+  if (!name) { alert('נא להזין שם לפני ההגשה'); return; }
+  if (!email) { alert('נא להזין כתובת מייל לפני ההגשה'); return; }
+
+  // Calculate part A score
+  let scoreA = 0;
+  for (let q = 1; q <= 10; q++) {
+    if (selected[q] === answers[q]) scoreA += 3;
+  }
+
+  const payload = {
+    name: name,
+    email: email,
+    q1: selected[1] || '',
+    q2: selected[2] || '',
+    q3: selected[3] || '',
+    q4: selected[4] || '',
+    q5: selected[5] || '',
+    q6: selected[6] || '',
+    q7: selected[7] || '',
+    q8: selected[8] || '',
+    q9: selected[9] || '',
+    q10: selected[10] || '',
+    score_a: scoreA,
+    ans11: document.getElementById('ans-11').value,
+    ans12: document.getElementById('ans-12').value,
+    ans13: document.getElementById('ans-13').value,
+    ans14: document.getElementById('ans-14').value,
+    ans16: document.getElementById('ans-16').value,
+    ans17: document.getElementById('ans-17').value,
+    ans18: document.getElementById('ans-18').value,
+    bonus: document.getElementById('ans-bonus').value,
+  };
+
+  const btn = document.querySelector('.btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'שולח...';
+  btn.style.opacity = '0.6';
+
+  fetch('https://script.google.com/macros/s/AKfycbxdjHtipPtH0SD5eiCIG-nWkfeeg7FMF5X1fB8AaTqUfBFb5ftPK3gzIKhTWneXbUxz/exec', {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    document.getElementById('success-msg').classList.add('visible');
+    btn.textContent = 'הוגש ✓';
+  })
+  .catch(() => {
+    document.getElementById('success-msg').classList.add('visible');
+    btn.textContent = 'הוגש ✓';
+  });
+}
+</script>
+</body>
+</html>
